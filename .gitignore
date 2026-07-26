@@ -1,0 +1,17 @@
+# data (OpenFOAM çıktıları + PyG tensörleri — repoya girmez)
+data/raw/
+data/processed/
+*.vtk
+*.foam
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# os / editor
+.DS_Store
+.vscode/
