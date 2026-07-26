@@ -1,0 +1,32 @@
+FoamFile { format ascii; class dictionary; object controlDict; }
+application     foamRun;
+solver          incompressibleFluid;
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         500;
+deltaT          1;
+writeControl    timeStep;
+writeInterval   100;
+purgeWrite      0;
+writeFormat     binary;
+writePrecision  6;
+writeCompression off;
+timeFormat      general;
+timePrecision   6;
+runTimeModifiable true;
+
+functions
+{
+    forces
+    {
+        type            forces;
+        libs            ("libforces.so");
+        writeControl    timeStep;
+        writeInterval   1;
+        patches         (hull);
+        rho             rhoInf;
+        rhoInf          998.8;
+        CofR            (0 0 0);
+    }
+}

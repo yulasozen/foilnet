@@ -1,0 +1,12 @@
+FoamFile { format ascii; class volScalarField; object k; }
+#include "include/initialConditions"
+dimensions      [0 2 -2 0 0 0 0];
+internalField   uniform $turbulentKE;
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+    inlet    { type fixedValue; value $internalField; }
+    outlet   { type inletOutlet; inletValue $internalField; value $internalField; }
+    hull     { type kqRWallFunction; value $internalField; }
+    farfield { type zeroGradient; }
+}

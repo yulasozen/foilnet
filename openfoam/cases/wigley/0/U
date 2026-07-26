@@ -1,0 +1,12 @@
+FoamFile { format ascii; class volVectorField; location "0"; object U; }
+#include "include/initialConditions"
+dimensions      [0 1 -1 0 0 0 0];
+internalField   uniform $flowVelocity;
+boundaryField
+{
+    #includeEtc "caseDicts/setConstraintTypes"
+    inlet    { type fixedValue; value $internalField; }
+    outlet   { type inletOutlet; inletValue uniform (0 0 0); value $internalField; }
+    hull     { type noSlip; }
+    farfield { type slip; }
+}
