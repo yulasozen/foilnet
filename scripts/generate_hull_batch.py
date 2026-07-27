@@ -1,5 +1,5 @@
 """
-Batch-generate Wigley hull STLs for a set of (B/L, T/L) ratios.
+Batch-generate Wigley hull STLs by Latin Hypercube Sampling over (L, B/L, T/L).
 
 Reuses the closed double-body Wigley formula and STL-writing approach from
 openfoam/scripts/make_wigley.py:
@@ -8,22 +8,21 @@ Double body: z spans [-T, +T] so the surface closes at top/bottom;
 x spans [-L/2, +L/2] so it closes at bow/stern. -> watertight by construction.
 Units: metres.
 """
+import argparse
 import csv
 import os
 
 import numpy as np
+from scipy.stats import qmc
 from stl import mesh
 
-L = 6.0                 # length (m), fixed across the batch
 nx, nz = 120, 60        # surface resolution (matches make_wigley.py)
 
-HULLS = [
-    ("wigley_00", 0.08,  0.0625),
-    ("wigley_01", 0.10,  0.0625),
-    ("wigley_02", 0.12,  0.0625),
-    ("wigley_03", 0.10,  0.05),
-    ("wigley_04", 0.10,  0.075),
-]
+L_RANGE = (4.0, 8.0)
+B_OVER_L_RANGE = (0.07, 0.13)
+T_OVER_L_RANGE = (0.045, 0.08)
+
+SEED = 42
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(SCRIPT_DIR, "..", "openfoam", "geometries", "batch")
@@ -47,7 +46,7 @@ def add_quad(tris, p1, p2, p3, p4):
     tris.append([p1, p3, p4])
 
 
-def build_hull(B, T):
+def build_hull(L, B, T):
     xs = np.linspace(-L / 2, L / 2, nx)
     zs = np.linspace(-T, T, nz)
 
@@ -65,35 +64,52 @@ def build_hull(B, T):
     return np.array(tris)
 
 
+def sample_params(n):
+    sampler = qmc.LatinHypercube(d=3, seed=SEED)
+    unit = sampler.random(n=n)
+    lo = np.array([L_RANGE[0], B_OVER_L_RANGE[0], T_OVER_L_RANGE[0]])
+    hi = np.array([L_RANGE[1], B_OVER_L_RANGE[1], T_OVER_L_RANGE[1]])
+    scaled = qmc.scale(unit, lo, hi)
+    return scaled  # columns: L, B_over_L, T_over_L
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--n", type=int, default=40, help="Number of hulls to generate")
+    args = parser.parse_args()
+    n = args.n
+
     os.makedirs(OUT_DIR, exist_ok=True)
+
+    samples = sample_params(n)
+    width = max(2, len(str(n - 1)))
 
     manifest_path = os.path.join(OUT_DIR, "manifest.csv")
     with open(manifest_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["hull_id", "L", "B", "T", "B_over_L", "T_over_L"])
 
-        for hull_id, b_over_l, t_over_l in HULLS:
+        for idx in range(n):
+            L, b_over_l, t_over_l = samples[idx]
             B = b_over_l * L
             T = t_over_l * L
 
-            tris = build_hull(B, T)
+            hull_id = f"wigley_{idx:0{width}d}"
+
+            tris = build_hull(L, B, T)
             m = mesh.Mesh(np.zeros(len(tris), dtype=mesh.Mesh.dtype))
             m.vectors = tris
 
             stl_path = os.path.join(OUT_DIR, f"{hull_id}.stl")
             m.save(stl_path)
 
-            mins = tris.reshape(-1, 3).min(axis=0)
-            maxs = tris.reshape(-1, 3).max(axis=0)
-            print(f"{hull_id}: B/L={b_over_l:.4f} T/L={t_over_l:.4f}  "
-                  f"L={L} B={B:.4f} T={T:.4f}")
-            print(f"  bbox min: {mins}")
-            print(f"  bbox max: {maxs}")
+            print(f"{hull_id}: L={L:.4f} B={B:.4f} T={T:.4f} "
+                  f"B/L={b_over_l:.4f} T/L={t_over_l:.4f}")
 
             writer.writerow([hull_id, L, B, T, b_over_l, t_over_l])
 
-    print(f"\nmanifest written to {manifest_path}")
+    print(f"\n{n} hulls written to {OUT_DIR}")
+    print(f"manifest written to {manifest_path}")
 
 
 if __name__ == "__main__":
