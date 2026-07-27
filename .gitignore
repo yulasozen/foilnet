@@ -15,3 +15,4 @@ venv/
 # os / editor
 .DS_Store
 .vscode/
+openfoam/runs/
