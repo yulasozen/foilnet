@@ -6,6 +6,7 @@ openfoam/runs/wigley_NN/VTK/wigley_NN_*.vtk for each hull. Reuses the conversion
 logic in src/foilnet/pillars/neural_operator/vtk_to_grid.py, importing it directly
 when possible and falling back to a subprocess call if the import fails.
 """
+import argparse
 import glob
 import os
 import subprocess
@@ -21,8 +22,6 @@ VTK_TO_GRID_PATH = os.path.join(SRC_DIR, "foilnet", "pillars", "neural_operator"
 RUNS_DIR = os.path.join(REPO_ROOT, "openfoam", "runs")
 OUT_DIR = os.path.join(REPO_ROOT, "data", "processed", "grids")
 
-NX, NY, NZ = 32, 16, 16
-
 sys.path.insert(0, SRC_DIR)
 try:
     from foilnet.pillars.neural_operator.vtk_to_grid import convert as convert_fn
@@ -35,20 +34,26 @@ def find_volume_vtk(run_dir, hull_id):
     return matches[-1] if matches else None
 
 
-def convert(vtk_path, out_path):
+def convert(vtk_path, out_path, nx, ny, nz):
     if convert_fn is not None:
-        convert_fn(vtk_path, out_path, NX, NY, NZ)
+        convert_fn(vtk_path, out_path, nx, ny, nz)
     else:
         subprocess.run(
             [
                 sys.executable, VTK_TO_GRID_PATH, vtk_path, out_path,
-                "--nx", str(NX), "--ny", str(NY), "--nz", str(NZ),
+                "--nx", str(nx), "--ny", str(ny), "--nz", str(nz),
             ],
             check=True,
         )
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--nx", type=int, default=32, help="Grid resolution in x (default: 32)")
+    parser.add_argument("--ny", type=int, default=16, help="Grid resolution in y (default: 16)")
+    parser.add_argument("--nz", type=int, default=16, help="Grid resolution in z (default: 16)")
+    args = parser.parse_args()
+
     os.makedirs(OUT_DIR, exist_ok=True)
 
     run_dirs = sorted(glob.glob(os.path.join(RUNS_DIR, "wigley_*")))
@@ -69,7 +74,7 @@ def main():
 
         out_path = os.path.join(OUT_DIR, f"{hull_id}.npz")
         try:
-            convert(vtk_path, out_path)
+            convert(vtk_path, out_path, args.nx, args.ny, args.nz)
         except Exception as e:
             print(f"  FAIL: {hull_id} ({e})")
             fail_count += 1
