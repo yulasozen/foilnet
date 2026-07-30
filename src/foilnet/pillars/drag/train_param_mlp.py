@@ -3,6 +3,7 @@
 import os
 import time
 
+import numpy as np
 import torch
 
 from foilnet.pillars.drag.dataset_drag import REPO_ROOT, load_train_test_split
@@ -11,6 +12,7 @@ from foilnet.pillars.drag.param_mlp import DragMLP
 EPOCHS = 2000
 LOG_EVERY = 200
 LR = 1e-3
+SEED = 42
 
 PROCESSED_DIR = os.path.join(REPO_ROOT, "data", "processed")
 MODEL_OUT_PATH = os.path.join(PROCESSED_DIR, "drag_mlp_trained.pt")
@@ -31,6 +33,9 @@ def r2_score(pred: torch.Tensor, true: torch.Tensor) -> float:
 
 
 def main() -> None:
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+
     device = torch.device("cpu")
     train_x, train_y, test_x, test_y, train_ids, test_ids = load_train_test_split()
     print(f"train hulls ({len(train_ids)}): {train_ids}")

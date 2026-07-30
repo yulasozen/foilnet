@@ -15,6 +15,7 @@ EPOCHS = 1000
 LOG_EVERY = 100
 LR = 1e-3
 BATCH_SIZE = 8
+SEED = 42
 
 REPO_ROOT = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -67,6 +68,9 @@ def r2_score(pred: torch.Tensor, true: torch.Tensor) -> float:
 
 
 def main() -> None:
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"using device: {device}")
 
