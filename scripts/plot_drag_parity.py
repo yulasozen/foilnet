@@ -13,12 +13,12 @@ import matplotlib.pyplot as plt
 import torch
 from torch_geometric.loader import DataLoader
 
-from foilnet.pillars.drag.dataset_drag import load_train_test_split, split_hulls
-from foilnet.pillars.drag.hull_drag_gnn import HullDragGNN
-from foilnet.pillars.drag.param_mlp import DragMLP
-from foilnet.pillars.drag.pointcloud_drag import PointCloudDrag
-from foilnet.pillars.drag.train_drag_gnn import load_graphs_with_drag
-from foilnet.pillars.drag.train_pc_drag import load_hulls as load_pc_hulls
+from hullnet.pillars.drag.dataset_drag import load_train_test_split, split_hulls
+from hullnet.pillars.drag.hull_drag_gnn import HullDragGNN
+from hullnet.pillars.drag.param_mlp import DragMLP
+from hullnet.pillars.drag.pointcloud_drag import PointCloudDrag
+from hullnet.pillars.drag.train_drag_gnn import load_graphs_with_drag
+from hullnet.pillars.drag.train_pc_drag import load_hulls as load_pc_hulls
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROCESSED_DIR = os.path.join(REPO_ROOT, "data", "processed")

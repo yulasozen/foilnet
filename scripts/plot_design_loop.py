@@ -1,4 +1,4 @@
-"""Visualize the FOILNET design loop -- the capstone: imagine a hull, get its drag instantly.
+"""Visualize the HullNet design loop -- the capstone: imagine a hull, get its drag instantly.
 
 Runs the same latent interpolation as `design_loop.py --mode interp` (VAE encode
 the two real endpoint hulls, linearly interpolate latent code + scale, decode,
@@ -17,7 +17,7 @@ import torch
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3D projection)
 
-from foilnet.pillars.generative.design_loop import (
+from hullnet.pillars.generative.design_loop import (
     load_drag_csv_rows,
     load_drag_model,
     load_hull_pointcloud,

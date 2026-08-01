@@ -9,7 +9,7 @@ import torch
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3D projection)
 
-from foilnet.pillars.mesh_gnn.model import HullGNN
+from hullnet.pillars.mesh_gnn.model import HullGNN
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROCESSED_DIR = os.path.join(REPO_ROOT, "data", "processed")

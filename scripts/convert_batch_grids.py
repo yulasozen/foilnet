@@ -3,7 +3,7 @@ Convert every OpenFOAM CFD run's volume VTK into a regular-grid .npz for FNO tra
 
 Runs on the Mac (not the container) once scripts/run_batch_cfd.sh has produced
 openfoam/runs/wigley_NN/VTK/wigley_NN_*.vtk for each hull. Reuses the conversion
-logic in src/foilnet/pillars/neural_operator/vtk_to_grid.py, importing it directly
+logic in src/hullnet/pillars/neural_operator/vtk_to_grid.py, importing it directly
 when possible and falling back to a subprocess call if the import fails.
 """
 import argparse
@@ -17,14 +17,14 @@ import numpy as np
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 SRC_DIR = os.path.join(REPO_ROOT, "src")
-VTK_TO_GRID_PATH = os.path.join(SRC_DIR, "foilnet", "pillars", "neural_operator", "vtk_to_grid.py")
+VTK_TO_GRID_PATH = os.path.join(SRC_DIR, "hullnet", "pillars", "neural_operator", "vtk_to_grid.py")
 
 RUNS_DIR = os.path.join(REPO_ROOT, "openfoam", "runs")
 OUT_DIR = os.path.join(REPO_ROOT, "data", "processed", "grids")
 
 sys.path.insert(0, SRC_DIR)
 try:
-    from foilnet.pillars.neural_operator.vtk_to_grid import convert as convert_fn
+    from hullnet.pillars.neural_operator.vtk_to_grid import convert as convert_fn
 except ImportError:
     convert_fn = None
 

@@ -3,7 +3,7 @@ Convert every OpenFOAM CFD run's hull-surface VTK into a PyTorch Geometric graph
 
 Runs on the Mac (not the container) once scripts/run_batch_cfd.sh has produced
 openfoam/runs/wigley_NN/VTK/hull/hull_*.vtk for each hull. Reuses the conversion
-logic in src/foilnet/data/mesh_to_graph.py, importing it directly when possible
+logic in src/hullnet/data/mesh_to_graph.py, importing it directly when possible
 and falling back to a subprocess call if the import fails.
 """
 import glob
@@ -14,14 +14,14 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 SRC_DIR = os.path.join(REPO_ROOT, "src")
-MESH_TO_GRAPH_PATH = os.path.join(SRC_DIR, "foilnet", "data", "mesh_to_graph.py")
+MESH_TO_GRAPH_PATH = os.path.join(SRC_DIR, "hullnet", "data", "mesh_to_graph.py")
 
 RUNS_DIR = os.path.join(REPO_ROOT, "openfoam", "runs")
 OUT_DIR = os.path.join(REPO_ROOT, "data", "processed")
 
 sys.path.insert(0, SRC_DIR)
 try:
-    from foilnet.data.mesh_to_graph import convert as convert_fn
+    from hullnet.data.mesh_to_graph import convert as convert_fn
 except ImportError:
     convert_fn = None
 

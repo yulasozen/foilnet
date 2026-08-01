@@ -49,7 +49,7 @@ for sign, flip in ((+1, False), (-1, True)):
 tris = np.array(tris)
 m = mesh.Mesh(np.zeros(len(tris), dtype=mesh.Mesh.dtype))
 m.vectors = tris
-m.save('/home/claude/foilnet/wigley.stl')
+m.save('/home/claude/hullnet/wigley.stl')
 
 # Report
 mins = tris.reshape(-1,3).min(axis=0)

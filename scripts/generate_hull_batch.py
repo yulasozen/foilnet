@@ -75,7 +75,7 @@ def sample_params(n):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--n", type=int, default=40, help="Number of hulls to generate")
+    parser.add_argument("--n", type=int, default=100, help="Number of hulls to generate")
     args = parser.parse_args()
     n = args.n
 

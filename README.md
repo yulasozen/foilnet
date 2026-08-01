@@ -1,6 +1,6 @@
-# FOILNET
+# HullNet
 
-FOILNET is a physical-AI portfolio project: four independent machine-learning approaches to ship-hull hydrodynamics, each trained on the same self-generated OpenFOAM CFD dataset — 100 Wigley hulls swept by Latin Hypercube Sampling. CFD is accurate but slow (a single RANS solve takes tens of minutes), which makes it impractical inside a design-optimization loop that needs thousands of evaluations. Each pillar attacks a different piece of the "replace/augment CFD with a fast surrogate" problem — surface loads, full volumetric flow, compact shape representation, and generative shape design — using a genuinely different technique: graph neural networks, Fourier neural operators, and point-cloud autoencoders (plain and variational). On top of that foundation, two further results push the project from "per-field surrogate" to "design tool": a model that predicts a hull's total drag straight from its surface geometry, and a full generative design loop that goes from an imagined hull to a predicted drag with no CFD in between.
+HullNet is a physical-AI portfolio project: four independent machine-learning approaches to ship-hull hydrodynamics, each trained on the same self-generated OpenFOAM CFD dataset — 100 Wigley hulls swept by Latin Hypercube Sampling. CFD is accurate but slow (a single RANS solve takes tens of minutes), which makes it impractical inside a design-optimization loop that needs thousands of evaluations. Each pillar attacks a different piece of the "replace/augment CFD with a fast surrogate" problem — surface loads, full volumetric flow, compact shape representation, and generative shape design — using a genuinely different technique: graph neural networks, Fourier neural operators, and point-cloud autoencoders (plain and variational). On top of that foundation, two further results push the project from "per-field surrogate" to "design tool": a model that predicts a hull's total drag straight from its surface geometry, and a full generative design loop that goes from an imagined hull to a predicted drag with no CFD in between.
 
 ## Headline results
 
@@ -70,7 +70,7 @@ openfoam/                     OpenFOAM case template, generated hull geometries,
   geometries/batch/            generated hull STLs + manifest.csv (LHS parameters)
   runs/                        per-hull CFD run directories (mesh + solve + VTK output)
 
-src/foilnet/
+src/hullnet/
   data/mesh_to_graph.py         VTK hull surface -> PyG graph conversion (pillar 1)
   pillars/
     mesh_gnn/                   Pillar 1: HullGNN (GraphSAGE surface-pressure model)
@@ -88,7 +88,7 @@ reports/figures/               prediction / generation visualizations
 
 ## Reproduce
 
-All commands run from the repo root; scripts that import `foilnet.pillars.*` need `PYTHONPATH=src`.
+All commands run from the repo root; scripts that import `hullnet.pillars.*` need `PYTHONPATH=src`.
 
 ```bash
 # 1. Generate 100 hulls via LHS (Mac)
@@ -99,12 +99,12 @@ scripts/run_batch_cfd.sh
 
 # --- Pillar 1: mesh GNN ---
 python3 scripts/convert_batch_graphs.py
-PYTHONPATH=src python3 src/foilnet/training/train_dataset.py
+PYTHONPATH=src python3 src/hullnet/training/train_dataset.py
 PYTHONPATH=src python3 scripts/visualize_prediction.py wigley_09
 
 # --- Pillar 2: neural operator ---
 python3 scripts/convert_batch_grids.py
-PYTHONPATH=src python3 src/foilnet/pillars/neural_operator/train_fno.py
+PYTHONPATH=src python3 src/hullnet/pillars/neural_operator/train_fno.py
 
 # Higher-resolution GPU variant (64x32x32, trained on a Kaggle T4):
 python3 scripts/convert_batch_grids.py --nx 64 --ny 32 --nz 32
@@ -112,22 +112,22 @@ python3 scripts/convert_batch_grids.py --nx 64 --ny 32 --nz 32
 
 # --- Pillar 3: geometry representation ---
 python3 scripts/stl_to_pointcloud.py
-PYTHONPATH=src python3 src/foilnet/pillars/geometry_repr/train_ae.py
+PYTHONPATH=src python3 src/hullnet/pillars/geometry_repr/train_ae.py
 
 # --- Pillar 4: generative ---
-PYTHONPATH=src python3 src/foilnet/pillars/generative/train_vae.py
-PYTHONPATH=src python3 src/foilnet/pillars/generative/generate.py --mode sample --k 5
-PYTHONPATH=src python3 src/foilnet/pillars/generative/generate.py --mode interp --hull_a wigley_05 --hull_b wigley_20
+PYTHONPATH=src python3 src/hullnet/pillars/generative/train_vae.py
+PYTHONPATH=src python3 src/hullnet/pillars/generative/generate.py --mode sample --k 5
+PYTHONPATH=src python3 src/hullnet/pillars/generative/generate.py --mode interp --hull_a wigley_05 --hull_b wigley_20
 python3 scripts/plot_pointclouds.py "data/processed/generated/interp_*.npy" vae_interp_wigley05_to_wigley20.png
 
 # --- Drag prediction (geometry -> total drag) ---
 python3 scripts/collect_drag.py
-PYTHONPATH=src python3 src/foilnet/pillars/drag/train_param_mlp.py
-PYTHONPATH=src python3 src/foilnet/pillars/drag/train_drag_gnn.py
-PYTHONPATH=src python3 src/foilnet/pillars/drag/train_pc_drag.py
+PYTHONPATH=src python3 src/hullnet/pillars/drag/train_param_mlp.py
+PYTHONPATH=src python3 src/hullnet/pillars/drag/train_drag_gnn.py
+PYTHONPATH=src python3 src/hullnet/pillars/drag/train_pc_drag.py
 PYTHONPATH=src python3 scripts/plot_drag_parity.py
 
 # --- Design loop (capstone): VAE generate -> instant drag prediction ---
-PYTHONPATH=src python3 src/foilnet/pillars/generative/design_loop.py --mode interp --hull_a wigley_05 --hull_b wigley_20
+PYTHONPATH=src python3 src/hullnet/pillars/generative/design_loop.py --mode interp --hull_a wigley_05 --hull_b wigley_20
 PYTHONPATH=src python3 scripts/plot_design_loop.py
 ```
